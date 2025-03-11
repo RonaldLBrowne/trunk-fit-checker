@@ -1,0 +1,691 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Trunk Fit Checker</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <style>
+        :root {
+            --primary: #6C63FF;
+            --secondary: #FF6B6B;
+            --accent: #4ECDC4;
+            --dark: #2C3E50;
+            --light: #F7F9FC;
+            --success: #2ECC71;
+            --error: #E74C3C;
+            --shadow: 0 8px 30px rgba(0,0,0,0.12);
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+            background: var(--light);
+            color: var(--dark);
+            min-height: 100vh;
+            padding: 20px;
+            background-image: 
+                radial-gradient(circle at 100% 0%, rgba(108,99,255,0.08) 0%, transparent 25%),
+                radial-gradient(circle at 0% 100%, rgba(78,205,196,0.08) 0%, transparent 25%);
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 40px;
+            position: relative;
+            padding: 40px 20px;
+            border-radius: 20px;
+            background: white;
+            box-shadow: var(--shadow);
+            overflow: hidden;
+        }
+
+        .header::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 5px;
+            background: linear-gradient(90deg, var(--primary), var(--accent));
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            color: var(--primary);
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            color: #666;
+            font-size: 1.1rem;
+        }
+
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 30px;
+            margin-bottom: 30px;
+        }
+
+        .card {
+            background: white;
+            border-radius: 20px;
+            padding: 30px;
+            box-shadow: var(--shadow);
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: translateY(-5px);
+        }
+
+        .card h2 {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            color: var(--primary);
+            margin-bottom: 20px;
+            font-size: 1.5rem;
+        }
+
+        .card h2 i {
+            font-size: 1.8rem;
+        }
+
+        .input-group {
+            margin-bottom: 20px;
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            color: var(--dark);
+            font-weight: 500;
+        }
+
+        .input-group select,
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #E0E5EC;
+            border-radius: 12px;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            background: var(--light);
+        }
+
+        .input-group select:focus,
+        .input-group input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 4px rgba(108,99,255,0.1);
+        }
+
+        .dimensions-display {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 15px;
+            margin-top: 20px;
+            padding: 20px;
+            background: var(--light);
+            border-radius: 15px;
+            text-align: center;
+        }
+
+        .dimension-box {
+            padding: 15px;
+            border-radius: 12px;
+            background: white;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.05);
+        }
+
+        .dimension-value {
+            font-size: 1.5rem;
+            font-weight: bold;
+            color: var(--primary);
+            margin: 5px 0;
+        }
+
+        .dimension-label {
+            color: #666;
+            font-size: 0.9rem;
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin-top: 30px;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 12px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: white;
+            box-shadow: 0 4px 15px rgba(108,99,255,0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(108,99,255,0.4);
+        }
+
+        .btn-secondary {
+            background: white;
+            color: var(--dark);
+            border: 2px solid #E0E5EC;
+        }
+
+        .btn-secondary:hover {
+            background: var(--light);
+        }
+
+        .result {
+            margin-top: 30px;
+            padding: 30px;
+            border-radius: 20px;
+            text-align: center;
+            transition: all 0.3s ease;
+            opacity: 0;
+            transform: translateY(20px);
+        }
+
+        .result.show {
+            opacity: 1;
+            transform: translateY(0);
+        }
+
+        .result.success {
+            background: rgba(46,204,113,0.1);
+            border: 2px solid var(--success);
+        }
+
+        .result.error {
+            background: rgba(231,76,60,0.1);
+            border: 2px solid var(--error);
+        }
+
+        .result-icon {
+            font-size: 3rem;
+            margin-bottom: 15px;
+        }
+
+        .result.success .result-icon {
+            color: var(--success);
+        }
+
+        .result.error .result-icon {
+            color: var(--error);
+        }
+
+        .result-message {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 10px;
+        }
+
+        .result-details {
+            color: #666;
+        }
+
+        @media (max-width: 768px) {
+            .grid {
+                grid-template-columns: 1fr;
+            }
+
+            .btn-group {
+                flex-direction: column;
+            }
+
+            .header h1 {
+                font-size: 2rem;
+            }
+        }
+
+        .tabs {
+            display: flex;
+            margin-bottom: 25px;
+            border-radius: 50px;
+            background: var(--light);
+            padding: 5px;
+            position: relative;
+            margin-bottom: 30px;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 12px 24px;
+            border: none;
+            border-radius: 50px;
+            background: none;
+            color: var(--dark);
+            font-size: 1rem;
+            font-weight: 500;
+            cursor: pointer;
+            position: relative;
+            z-index: 2;
+            transition: color 0.3s ease;
+        }
+
+        .tab-button.active {
+            color: white;
+        }
+
+        .tab-slider {
+            position: absolute;
+            top: 5px;
+            left: 5px;
+            bottom: 5px;
+            width: calc(50% - 5px);
+            background: var(--primary);
+            border-radius: 50px;
+            transition: left 0.3s ease;
+            z-index: 1;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Trunk Fit Checker</h1>
+            <p>Find out instantly if your item will fit in your car's trunk</p>
+        </div>
+
+        <div class="grid">
+            <div class="card">
+                <h2><i class="fas fa-car"></i>Trunk Dimensions</h2>
+                <div class="tabs">
+                    <button class="tab-button active" id="car-select-tab">Select Car</button>
+                    <button class="tab-button" id="custom-dim-tab">Custom Dimensions</button>
+                    <div class="tab-slider"></div>
+                </div>
+
+                <div id="car-select-panel">
+                    <div class="input-group">
+                        <label for="car-make">Car Make</label>
+                        <select id="car-make">
+                            <option value="">Select Make</option>
+                            <option value="toyota">Toyota</option>
+                            <option value="honda">Honda</option>
+                            <option value="ford">Ford</option>
+                            <option value="bmw">BMW</option>
+                            <option value="mercedes">Mercedes</option>
+                            <option value="hyundai">Hyundai</option>
+                            <option value="kia">Kia</option>
+                        </select>
+                    </div>
+
+                    <div class="input-group">
+                        <label for="car-model">Car Model</label>
+                        <select id="car-model" disabled>
+                            <option value="">Select Model</option>
+                        </select>
+                    </div>
+
+                    <div id="trunk-dimensions" class="dimensions-display" style="display: none;">
+                        <div class="dimension-box">
+                            <div class="dimension-label">Length</div>
+                            <div class="dimension-value" id="trunk-length">--</div>
+                            <div class="dimension-label">cm</div>
+                        </div>
+                        <div class="dimension-box">
+                            <div class="dimension-label">Width</div>
+                            <div class="dimension-value" id="trunk-width">--</div>
+                            <div class="dimension-label">cm</div>
+                        </div>
+                        <div class="dimension-box">
+                            <div class="dimension-label">Height</div>
+                            <div class="dimension-value" id="trunk-height">--</div>
+                            <div class="dimension-label">cm</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="custom-dim-panel" style="display: none;">
+                    <div class="input-group">
+                        <label for="trunk-length-custom">Length (cm)</label>
+                        <input type="number" id="trunk-length-custom" min="0" step="0.1" placeholder="Enter trunk length">
+                    </div>
+                    <div class="input-group">
+                        <label for="trunk-width-custom">Width (cm)</label>
+                        <input type="number" id="trunk-width-custom" min="0" step="0.1" placeholder="Enter trunk width">
+                    </div>
+                    <div class="input-group">
+                        <label for="trunk-height-custom">Height (cm)</label>
+                        <input type="number" id="trunk-height-custom" min="0" step="0.1" placeholder="Enter trunk height">
+                    </div>
+                </div>
+            </div>
+
+            <div class="card">
+                <h2><i class="fas fa-box"></i>Item Dimensions</h2>
+                <div class="input-group">
+                    <label for="item-length">Length (cm)</label>
+                    <input type="number" id="item-length" min="0" step="0.1" placeholder="Enter length">
+                </div>
+
+                <div class="input-group">
+                    <label for="item-width">Width (cm)</label>
+                    <input type="number" id="item-width" min="0" step="0.1" placeholder="Enter width">
+                </div>
+
+                <div class="input-group">
+                    <label for="item-height">Height (cm)</label>
+                    <input type="number" id="item-height" min="0" step="0.1" placeholder="Enter height">
+                </div>
+            </div>
+        </div>
+
+        <div class="btn-group">
+            <button id="calculate" class="btn btn-primary">
+                <i class="fas fa-ruler-combined"></i>
+                Check if it fits
+            </button>
+            <button id="reset" class="btn btn-secondary">
+                <i class="fas fa-redo"></i>
+                Reset
+            </button>
+        </div>
+
+        <div id="result" class="result">
+            <div class="result-icon">
+                <i class="fas"></i>
+            </div>
+            <div class="result-message"></div>
+            <div class="result-details"></div>
+        </div>
+    </div>
+
+    <script>
+        // Car database with trunk dimensions
+        const carDatabase = {
+            toyota: {
+                "Camry": { length: 97, width: 107, height: 38 },
+                "Corolla": { length: 85, width: 94, height: 35 },
+                "RAV4": { length: 98, width: 101, height: 42 }
+            },
+            honda: {
+                "Civic": { length: 88, width: 97, height: 38 },
+                "Accord": { length: 95, width: 105, height: 40 },
+                "CR-V": { length: 101, width: 104, height: 44 }
+            },
+            ford: {
+                "Focus": { length: 83, width: 95, height: 38 },
+                "Fusion": { length: 93, width: 102, height: 39 },
+                "Escape": { length: 97, width: 104, height: 45 }
+            },
+            bmw: {
+                "3 Series": { length: 96, width: 106, height: 40 },
+                "5 Series": { length: 102, width: 112, height: 42 },
+                "X3": { length: 99, width: 108, height: 46 }
+            },
+            mercedes: {
+                "C-Class": { length: 95, width: 105, height: 41 },
+                "E-Class": { length: 103, width: 114, height: 43 },
+                "GLC": { length: 98, width: 110, height: 45 }
+            },
+            hyundai: {
+                "Elantra": { length: 86, width: 96, height: 37 },
+                "Sonata": { length: 94, width: 104, height: 39 },
+                "Tucson": { length: 95, width: 102, height: 43 },
+                "Santa Fe": { length: 100, width: 106, height: 45 }
+            },
+            kia: {
+                "Forte": { length: 85, width: 95, height: 36 },
+                "K5": { length: 93, width: 103, height: 39 },
+                "Sportage": { length: 94, width: 100, height: 42 },
+                "Sorento": { length: 99, width: 105, height: 44 }
+            }
+        };
+
+        // Tab switching functionality
+        document.getElementById('car-select-tab').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('custom-dim-tab').classList.remove('active');
+            document.getElementById('car-select-panel').style.display = 'block';
+            document.getElementById('custom-dim-panel').style.display = 'none';
+            document.querySelector('.tab-slider').style.left = '5px';
+        });
+
+        document.getElementById('custom-dim-tab').addEventListener('click', function() {
+            this.classList.add('active');
+            document.getElementById('car-select-tab').classList.remove('active');
+            document.getElementById('custom-dim-panel').style.display = 'block';
+            document.getElementById('car-select-panel').style.display = 'none';
+            document.querySelector('.tab-slider').style.left = '50%';
+        });
+
+        // Car make selection changes available models
+        document.getElementById('car-make').addEventListener('change', function() {
+            const make = this.value;
+            const modelSelect = document.getElementById('car-model');
+            
+            // Clear current options
+            modelSelect.innerHTML = '<option value="">Select Model</option>';
+            
+            // Hide trunk dimensions display
+            document.getElementById('trunk-dimensions').style.display = 'none';
+            
+            if (make) {
+                // Enable model select
+                modelSelect.disabled = false;
+                
+                // Add models for selected make
+                const models = carDatabase[make];
+                for (const model in models) {
+                    const option = document.createElement('option');
+                    option.value = model;
+                    option.textContent = model;
+                    modelSelect.appendChild(option);
+                }
+            } else {
+                // Disable model select if no make is selected
+                modelSelect.disabled = true;
+            }
+        });
+
+        // Car model selection updates trunk dimensions
+        document.getElementById('car-model').addEventListener('change', function() {
+            const make = document.getElementById('car-make').value;
+            const model = this.value;
+            const dimensionsDisplay = document.getElementById('trunk-dimensions');
+            
+            if (make && model && carDatabase[make][model]) {
+                const trunkDims = carDatabase[make][model];
+                
+                // Update displayed dimensions
+                document.getElementById('trunk-length').textContent = trunkDims.length;
+                document.getElementById('trunk-width').textContent = trunkDims.width;
+                document.getElementById('trunk-height').textContent = trunkDims.height;
+                
+                // Show trunk dimensions display with grid layout
+                dimensionsDisplay.style.display = 'grid';
+            } else {
+                // Hide trunk dimensions display if no model is selected
+                dimensionsDisplay.style.display = 'none';
+            }
+        });
+
+        // Modify the calculate button event listener to handle both car selection and custom dimensions
+        document.getElementById('calculate').addEventListener('click', function() {
+            let trunkLength, trunkWidth, trunkHeight;
+            
+            // Check which tab is active
+            if (document.getElementById('car-select-tab').classList.contains('active')) {
+                // Get dimensions from selected car
+                const make = document.getElementById('car-make').value;
+                const model = document.getElementById('car-model').value;
+                
+                if (!make || !model) {
+                    document.getElementById('result').textContent = 'Please select a car make and model.';
+                    document.getElementById('result').classList.add('error');
+                    document.getElementById('result').classList.remove('hidden');
+                    document.getElementById('orientation').classList.add('hidden');
+                    return;
+                }
+                
+                const carDims = carDatabase[make][model];
+                trunkLength = carDims.length;
+                trunkWidth = carDims.width;
+                trunkHeight = carDims.height;
+            } else {
+                // Get dimensions from custom input
+                trunkLength = parseFloat(document.getElementById('trunk-length-custom').value);
+                trunkWidth = parseFloat(document.getElementById('trunk-width-custom').value);
+                trunkHeight = parseFloat(document.getElementById('trunk-height-custom').value);
+                
+                if (isNaN(trunkLength) || isNaN(trunkWidth) || isNaN(trunkHeight) ||
+                    trunkLength <= 0 || trunkWidth <= 0 || trunkHeight <= 0) {
+                    document.getElementById('result').textContent = 'Please enter positive numbers for all trunk dimensions.';
+                    document.getElementById('result').classList.add('error');
+                    document.getElementById('result').classList.remove('hidden');
+                    document.getElementById('orientation').classList.add('hidden');
+                    return;
+                }
+            }
+            
+            // Get item dimensions
+            const itemLength = parseFloat(document.getElementById('item-length').value);
+            const itemWidth = parseFloat(document.getElementById('item-width').value);
+            const itemHeight = parseFloat(document.getElementById('item-height').value);
+            
+            // Get result elements
+            const resultElement = document.getElementById('result');
+            const orientationElement = document.getElementById('orientation');
+            
+            // Reset classes
+            resultElement.className = '';
+            orientationElement.className = 'hidden';
+            
+            // Validate item inputs
+            if (isNaN(itemLength) || isNaN(itemWidth) || isNaN(itemHeight) ||
+                itemLength <= 0 || itemWidth <= 0 || itemHeight <= 0) {
+                resultElement.textContent = 'Please enter positive numbers for all item dimensions.';
+                resultElement.classList.add('error');
+                resultElement.classList.remove('hidden');
+                return;
+            }
+            
+            // Create arrays of dimensions with their names
+            const trunkDims = [
+                { value: trunkLength, name: 'length' },
+                { value: trunkWidth, name: 'width' },
+                { value: trunkHeight, name: 'height' }
+            ].sort((a, b) => b.value - a.value);
+            
+            const itemDims = [
+                { value: itemLength, name: 'length' },
+                { value: itemWidth, name: 'width' },
+                { value: itemHeight, name: 'height' }
+            ].sort((a, b) => b.value - a.value);
+            
+            // Check if item fits in trunk
+            if (itemDims[0].value <= trunkDims[0].value && 
+                itemDims[1].value <= trunkDims[1].value && 
+                itemDims[2].value <= trunkDims[2].value) {
+                
+                resultElement.textContent = 'It fits!';
+                resultElement.classList.add('success');
+                
+                let orientationText = 'Suggested orientation:<br>';
+                orientationText += `Place the item with its ${itemDims[0].name} (${itemDims[0].value} cm) `;
+                orientationText += `along the trunk's ${trunkDims[0].name} (${trunkDims[0].value} cm).<br>`;
+                orientationText += `Place the item's ${itemDims[1].name} (${itemDims[1].value} cm) `;
+                orientationText += `along the trunk's ${trunkDims[1].name} (${trunkDims[1].value} cm).<br>`;
+                orientationText += `Place the item's ${itemDims[2].name} (${itemDims[2].value} cm) `;
+                orientationText += `along the trunk's ${trunkDims[2].name} (${trunkDims[2].value} cm).`;
+                
+                orientationElement.innerHTML = orientationText;
+                orientationElement.classList.remove('hidden');
+            } else {
+                let problemDimension = '';
+                if (itemDims[0].value > trunkDims[0].value) {
+                    problemDimension = `The item's largest dimension (${itemDims[0].value} cm) exceeds the trunk's largest dimension (${trunkDims[0].value} cm).`;
+                } else if (itemDims[1].value > trunkDims[1].value) {
+                    problemDimension = `The item's second largest dimension (${itemDims[1].value} cm) exceeds the trunk's second largest dimension (${trunkDims[1].value} cm).`;
+                } else {
+                    problemDimension = `The item's smallest dimension (${itemDims[2].value} cm) exceeds the trunk's smallest dimension (${trunkDims[2].value} cm).`;
+                }
+                
+                resultElement.textContent = 'It does not fit.';
+                resultElement.classList.add('error');
+                
+                orientationElement.textContent = problemDimension;
+                orientationElement.classList.remove('hidden');
+            }
+            
+            resultElement.classList.remove('hidden');
+        });
+
+        // Modify the reset button to handle car selection
+        document.getElementById('reset').addEventListener('click', function() {
+            // Reset car selection
+            document.getElementById('car-make').value = '';
+            document.getElementById('car-model').innerHTML = '<option value="">Select Model</option>';
+            document.getElementById('car-model').disabled = true;
+            document.getElementById('trunk-dimensions').style.display = 'none';
+            
+            // Reset custom dimensions
+            document.getElementById('trunk-length-custom').value = '';
+            document.getElementById('trunk-width-custom').value = '';
+            document.getElementById('trunk-height-custom').value = '';
+            
+            // Reset item dimensions
+            document.getElementById('item-length').value = '';
+            document.getElementById('item-width').value = '';
+            document.getElementById('item-height').value = '';
+            
+            // Hide results
+            document.getElementById('result').className = 'hidden';
+            document.getElementById('orientation').className = 'hidden';
+        });
+
+        // Add preset functionality - fills in example values
+        // querySelectorAll gets all elements with class 'preset'
+        document.querySelectorAll('.preset').forEach(button => {
+            // Add click event listener to each preset button
+            button.addEventListener('click', function() {
+                // Get the preset values from data attributes and split the comma-separated values
+                const trunkDims = this.getAttribute('data-trunk').split(',');
+                const itemDims = this.getAttribute('data-item').split(',');
+                
+                // Fill in the trunk dimension inputs
+                document.getElementById('trunk-length-custom').value = trunkDims[0];
+                document.getElementById('trunk-width-custom').value = trunkDims[1];
+                document.getElementById('trunk-height-custom').value = trunkDims[2];
+                
+                // Fill in the item dimension inputs
+                document.getElementById('item-length').value = itemDims[0];
+                document.getElementById('item-width').value = itemDims[1];
+                document.getElementById('item-height').value = itemDims[2];
+                
+                // Automatically trigger the calculation
+                document.getElementById('calculate').click();
+            });
+        });
+    </script>
+</body>
+</html>
